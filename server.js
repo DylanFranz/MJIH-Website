@@ -76,19 +76,23 @@ app.post('/upload', upload.single('photo'), async (req, res) => {
     console.log('Received photo upload:', req.file.originalname);
     console.log('Performance:', validPerformance.display);
 
-    // Process image with sharp - ensure it's exactly 480x640
+    // Force output to PNG at exactly 480x640
     const processedImage = await sharp(req.file.buffer)
       .resize(480, 640, {
         fit: 'cover',
         position: 'center'
       })
-      .jpeg({ quality: 90 })
+      .png({
+        compressionLevel: 9, // max compression
+        adaptiveFiltering: true,
+        force: true
+      })
       .toBuffer();
 
-    // Generate unique filename
+    // Generate unique PNG filename
     const timestamp = Date.now();
     const randomSuffix = Math.random().toString(36).substring(2, 8);
-    const filename = `photo_${timestamp}_${randomSuffix}.jpg`;
+    const filename = `photo_${timestamp}_${randomSuffix}.png`;
     
     // Create path with performance subfolder
     const baseFolder = process.env.DROPBOX_FOLDER || '/My Joy is Heavy Photos';
